@@ -6,12 +6,12 @@
 ---
 
 ## 📌 Phase 1: Project Scaffolding & Automated Test Harness
-- [ ] Initialize Expo (React Native + TypeScript) project with modern navigation.
-- [ ] Install & configure **Jest** + **React Native Testing Library**.
-- [ ] Define TypeScript schemas for `UserProfile`, `Group`, `GroupMember`, `GroupInvitation`, `Folder`, `RecurrenceRule`, and `Task`.
-- [ ] Build & test local store engine (SQLite / in-memory cache) with group, folder, and recurrence calculations.
-- [ ] Verify scaffolding passes 100% automated tests & headless bundle compilation.
-- [ ] Commit & push to GitHub.
+- [x] Initialize Expo (React Native + TypeScript) project with modern navigation.
+- [x] Install & configure **Jest** + **React Native Testing Library**.
+- [x] Define TypeScript schemas for `UserProfile`, `Group`, `GroupMember`, `GroupInvitation`, `Folder`, `RecurrenceRule`, and `Task`.
+- [x] Build & test local store engine (SQLite / in-memory cache) with group, folder, and recurrence calculations.
+- [x] Verify scaffolding passes 100% automated tests & headless bundle compilation.
+- [x] Commit & push to GitHub.
 
 ---
 
