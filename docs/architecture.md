@@ -1,6 +1,6 @@
 # TaskPlane — System Architecture
 
-**Version:** 2.1 (Google OAuth & Member Invitations)  
+**Version:** 2.2 (Recurring Tasks & Multi-Assignee Scheduling)  
 **Last Updated:** 2026-11-01  
 
 ---
@@ -111,20 +111,34 @@ interface Folder {
 }
 ```
 
-### 2.6 `Task` Entity
+### 2.6 `RecurrenceRule` & `Task` Entities
 ```typescript
+type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly' | 'custom';
+type DayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+interface RecurrenceRule {
+  frequency: RecurrenceFrequency;
+  interval: number;                  // e.g. 1 = every week, 2 = every 2 weeks
+  days_of_week?: DayOfWeek[];        // e.g. ['mon'] for "Every Monday"
+  time_of_day?: string;              // "08:00"
+  end_date?: string;                 // Optional expiration date
+}
+
 interface Task {
   id: string;
-  group_id: string;           // Foreign Key -> Group.id (Mandatory)
-  folder_id?: string | null;  // Foreign Key -> Folder.id (Optional: Allocated into a folder)
-  title: string;              // Task summary
-  notes?: string;             // Detailed description
-  due_date?: string;          // ISO 8601 string
+  group_id: string;                  // Foreign Key -> Group.id (Mandatory)
+  folder_id?: string | null;         // Foreign Key -> Folder.id (Optional: Allocated into a folder)
+  title: string;                     // e.g. "Empty Dishwasher"
+  notes?: string;                    // Detailed instructions
+  due_date?: string;                 // ISO 8601 string (e.g. 2026-11-02T08:00:00Z)
   priority: 'low' | 'medium' | 'high' | 'urgent';
   is_completed: boolean;
-  completed_at?: string;
-  created_by: string;         // User ID of creator
-  assigned_to: string[];      // Array of User IDs (Group members participating)
+  completed_at?: string;             // Timestamp when checked off
+  completed_by?: string;             // User ID of who checked it off (e.g. Sarah)
+  created_by: string;                // User ID of creator
+  assigned_to: string[];             // Array of User IDs (e.g. [John.id, Sarah.id])
+  recurrence?: RecurrenceRule | null;// Recurrence definition
+  parent_recurrence_id?: string;     // References the parent recurring template
   created_at: string;
   updated_at: string;
 }
@@ -132,15 +146,17 @@ interface Task {
 
 ---
 
-## 3. Google OAuth Flow & Invitation Redemption
+## 3. Recurrence Engine & Next-Occurrence Generation
 
-1. **Invite Generation**:
-   - Admin enters `invitee@gmail.com` and sets permissions.
-   - Record created in `GroupInvitation` table with `status: 'pending'`.
-2. **Google Sign-In**:
-   - Invitee signs in with Google OAuth (`@react-native-google-signin/google-signin` or Supabase Google OAuth).
-   - Authenticated JWT confirms `email: "invitee@gmail.com"`.
-3. **Automatic Association Hook (Supabase Postgres Trigger)**:
-   - When a user signs in, a trigger queries `GroupInvitation` for matching `invited_email`.
-   - Matching pending invitations are automatically inserted into `GroupMember` with the specified permissions, and `GroupInvitation.status` is set to `'accepted'`.
-   - The user immediately gains access to the group, its folders, and its tasks on all their devices!
+When a task has a `recurrence` rule:
+1. **Completion Trigger**:
+   - Any assigned user (e.g., Sarah) marks the task complete on phone, tablet, or smartwatch.
+   - The task is updated: `is_completed: true`, `completed_by: Sarah.id`, `completed_at: now()`.
+2. **Next-Occurrence Calculation**:
+   - The recurrence engine calculates the next scheduled date (e.g., the following Monday at 08:00 AM).
+   - A new instance is created preserving:
+     - `title`, `notes`, `priority`
+     - `group_id`, `folder_id` (preserves folder allocation)
+     - `assigned_to` (`[John.id, Sarah.id]`)
+     - `recurrence` rule and `parent_recurrence_id`
+   - The new occurrence is saved and immediately synced to all participants' devices.
