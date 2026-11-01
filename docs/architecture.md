@@ -1,6 +1,6 @@
 # TaskPlane — System Architecture
 
-**Version:** 2.0 (Groups, Folders & Permissions)  
+**Version:** 2.1 (Google OAuth & Member Invitations)  
 **Last Updated:** 2026-11-01  
 
 ---
@@ -9,8 +9,14 @@
 
 ```
                                   ┌───────────────────────────┐
+                                  │    Google Identity /      │
+                                  │     OAuth 2.0 Provider    │
+                                  └─────────────┬─────────────┘
+                                                │ OAuth Token Exchange
+                                                ▼
+                                  ┌───────────────────────────┐
                                   │   Supabase Cloud DB       │
-                                  │   (Postgres, RLS, Auth)   │
+                                  │   (Auth, Postgres, RLS)   │
                                   └─────────────┬─────────────┘
                                                 │ Realtime TLS
               ┌─────────────────────────────────┼─────────────────────────────────┐
@@ -33,7 +39,18 @@
 
 ## 2. Relational Data Models & TypeScript Types
 
-### 2.1 `Group` Entity
+### 2.1 `User` Entity (Google Synced)
+```typescript
+interface UserProfile {
+  id: string;                 // Supabase Auth UUID (mapped to Google sub)
+  email: string;              // Verified Google email
+  full_name: string;          // Google profile display name
+  avatar_url?: string;        // Google profile photo URL
+  created_at: string;
+}
+```
+
+### 2.2 `Group` Entity
 ```typescript
 interface Group {
   id: string;                 // UUID
@@ -45,7 +62,7 @@ interface Group {
 }
 ```
 
-### 2.2 `GroupMember` & Permissions Entity (RBAC)
+### 2.3 `GroupMember` & Permissions Entity (RBAC)
 ```typescript
 type GroupRole = 'admin' | 'member';
 
@@ -59,18 +76,32 @@ interface GroupPermissions {
 interface GroupMember {
   id: string;
   group_id: string;           // Foreign Key -> Group.id
-  user_id: string;            // Foreign Key -> User.id
+  user_id: string;            // Foreign Key -> UserProfile.id
   role: GroupRole;            // 'admin' has all permissions by default
   permissions: GroupPermissions;
   joined_at: string;
 }
 ```
 
-### 2.3 `Folder` Entity
+### 2.4 `GroupInvitation` Entity (Google OAuth Linkage)
+```typescript
+interface GroupInvitation {
+  id: string;
+  group_id: string;           // Foreign Key -> Group.id
+  invited_email: string;      // The invitee's Google email address
+  invited_by: string;         // Admin user ID
+  role: GroupRole;
+  permissions: GroupPermissions;
+  status: 'pending' | 'accepted' | 'declined';
+  created_at: string;
+}
+```
+
+### 2.5 `Folder` Entity
 ```typescript
 interface Folder {
   id: string;
-  group_id: string;           // Foreign Key -> Group.id (Every folder belongs to a group)
+  group_id: string;           // Foreign Key -> Group.id
   name: string;               // e.g. "Sprint 14", "House Chores"
   color?: string;             // Hex code (e.g. "#6366F1")
   icon?: string;              // e.g. "folder", "briefcase", "home"
@@ -80,20 +111,20 @@ interface Folder {
 }
 ```
 
-### 2.4 `Task` Entity
+### 2.6 `Task` Entity
 ```typescript
 interface Task {
   id: string;
-  group_id: string;           // Foreign Key -> Group.id (Mandatory: Every task belongs to a group)
+  group_id: string;           // Foreign Key -> Group.id (Mandatory)
   folder_id?: string | null;  // Foreign Key -> Folder.id (Optional: Allocated into a folder)
   title: string;              // Task summary
-  notes?: string;             // Detailed description / checklist
+  notes?: string;             // Detailed description
   due_date?: string;          // ISO 8601 string
   priority: 'low' | 'medium' | 'high' | 'urgent';
   is_completed: boolean;
   completed_at?: string;
   created_by: string;         // User ID of creator
-  assigned_to: string[];      // Array of User IDs (Group members participating in task)
+  assigned_to: string[];      // Array of User IDs (Group members participating)
   created_at: string;
   updated_at: string;
 }
@@ -101,9 +132,15 @@ interface Task {
 
 ---
 
-## 3. Row-Level Security (RLS) on Cloud Database
+## 3. Google OAuth Flow & Invitation Redemption
 
-Supabase provides PostgreSQL Row-Level Security (RLS) policies to enforce permissions at the database level:
-- **Group Isolation**: A user can only read/write data for groups where they are an active `GroupMember`.
-- **Admin Rights**: Only users with `role: 'admin'` or `permissions.can_manage_folders` can create/delete folders.
-- **Task Permissions**: Creating tasks checks `permissions.can_create_tasks`; editing checks `permissions.can_edit_tasks` or if the user is the task creator/assignee.
+1. **Invite Generation**:
+   - Admin enters `invitee@gmail.com` and sets permissions.
+   - Record created in `GroupInvitation` table with `status: 'pending'`.
+2. **Google Sign-In**:
+   - Invitee signs in with Google OAuth (`@react-native-google-signin/google-signin` or Supabase Google OAuth).
+   - Authenticated JWT confirms `email: "invitee@gmail.com"`.
+3. **Automatic Association Hook (Supabase Postgres Trigger)**:
+   - When a user signs in, a trigger queries `GroupInvitation` for matching `invited_email`.
+   - Matching pending invitations are automatically inserted into `GroupMember` with the specified permissions, and `GroupInvitation.status` is set to `'accepted'`.
+   - The user immediately gains access to the group, its folders, and its tasks on all their devices!

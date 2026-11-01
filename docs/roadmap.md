@@ -8,7 +8,7 @@
 ## 📌 Phase 1: Project Scaffolding & Automated Test Harness
 - [ ] Initialize Expo (React Native + TypeScript) project with modern navigation.
 - [ ] Install & configure **Jest** + **React Native Testing Library**.
-- [ ] Define TypeScript schemas for `Group`, `GroupMember`, `Folder`, and `Task`.
+- [ ] Define TypeScript schemas for `UserProfile`, `Group`, `GroupMember`, `GroupInvitation`, `Folder`, and `Task`.
 - [ ] Build & test local store engine (SQLite / in-memory cache) with group/folder relationships.
 - [ ] Verify scaffolding passes 100% automated tests & headless bundle compilation.
 - [ ] Commit & push to GitHub.
@@ -16,9 +16,12 @@
 ---
 
 ## 📌 Phase 2: Groups, Folders & Collaborative Task UI
+- [ ] **Google Sign-In UI & Profile State**:
+  - Google OAuth login flow (mock/dev provider + Supabase Google Auth).
+  - Profile avatar, display name, and active session management.
 - [ ] **Group Switcher & Admin Controls**:
   - Group dropdown/selector (switch between Work, Personal, etc.).
-  - Admin member management screen (invite member, grant `can_create_tasks`, `can_edit_tasks`, etc.).
+  - Admin member management screen (invite via Google email, configure permissions).
 - [ ] **Folder Management (Allocation)**:
   - Create / rename folders inside the active group.
   - Filter tasks by folder.
@@ -28,7 +31,7 @@
 - [ ] **Adaptive Layout**:
   - 3-column tablet / iPad layout (Groups & Folders sidebar + Task List + Task Details).
   - Clean single-screen mobile navigation.
-- [ ] **Agent Test Suite**: 100% automated tests for group switching, permission gating, folder allocation, and task completion.
+- [ ] **Agent Test Suite**: 100% automated tests for group switching, Google invite reconciliation, permission gating, folder allocation, and task completion.
 
 ---
 
