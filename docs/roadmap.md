@@ -1,35 +1,44 @@
 # TaskPlane — Implementation Roadmap
 
 **Tracking our development milestones from scratch to App Store / Play Store launch.**
+*All phases follow the strict Agent-Led Automated Testing Protocol ([docs/testing.md](file:///Users/Aarav/Documents/Apps/TaskPlane/docs/testing.md)).*
 
 ---
 
-## 📌 Phase 1: Project Scaffolding & Core Architecture
-- [ ] Initialize Expo (React Native + TypeScript) project with modern navigation.
-- [ ] Set up styling (Tailwind / NativeWind) with Dark/Light theme support.
-- [ ] Set up TypeScript types & local storage layer (offline-ready).
-- [ ] Commit & push initial structure to GitHub.
+## 📌 Phase 1: Project Scaffolding & Automated Test Harness
+- [ ] Initialize Expo (React Native + TypeScript) project.
+- [ ] Install & configure **Jest** + **React Native Testing Library**.
+- [ ] Configure `test:all` script (`tsc --noEmit` + `jest`).
+- [ ] Set up styling (NativeWind / Tailwind) with responsive layouts.
+- [ ] Verify scaffolding passes 100% of automated tests & headless bundle compilation.
+- [ ] Commit & push to GitHub.
 
 ---
 
-## 📌 Phase 2: Core Task Experience (Phone & Tablet)
-- [ ] Build **Today View**: List of current day's tasks with priority badges.
-- [ ] Build **Quick Add Task Modal/Screen**: Title, due date picker, priority selector, category tag.
-- [ ] Build **Task Card**: Checkbox to toggle completion with smooth animation, edit, swipe to delete.
-- [ ] Build **Tablet / iPad Responsive Layout**: Two-column view (sidebar lists + task panel).
-- [ ] Verify live on mobile via Expo Go (scan QR code).
+## 📌 Phase 2: Core Task Engine & Verified UI (Phone + Tablet)
+- [ ] Build Task Data Store (offline persistence with SQLite / MMKV).
+- [ ] **Agent Test**: Automated unit tests for create, update, delete, priority sort, and date filters.
+- [ ] Build UI Components:
+  - Header & Stats (total, completed, pending).
+  - Quick Add Task Input bar.
+  - Interactive Task List with completion toggle and delete swipe.
+  - Filter tabs (All, Today, Priority, Done).
+- [ ] **Agent Test**: Component simulation tests for typing, adding, checking off, and filtering.
+- [ ] Build Responsive Layout for iPad / Tablet / Desktop.
+- [ ] Verify test suite passes 100% before handing over for user visual check.
 
 ---
 
-## 📌 Phase 3: Universal Smartwatch Notifications & Offline Sync
-- [ ] Configure `expo-notifications` with actionable interactive categories (`Done` / `Snooze 15m`).
-- [ ] Test notification actions on connected smartwatches (Apple Watch / Garmin / Wear OS).
-- [ ] Integrate Supabase client for cloud backup and real-time multi-device sync.
+## 📌 Phase 3: Universal Smartwatch Notifications & Cloud Sync
+- [ ] Configure `expo-notifications` with wrist actions (`ACTION_COMPLETE`, `ACTION_SNOOZE`).
+- [ ] **Agent Test**: Simulated notification trigger & background completion tests.
+- [ ] Set up Supabase client for multi-device sync with offline fallback.
+- [ ] **Agent Test**: Offline-to-online sync reconciliation tests.
 
 ---
 
-## 📌 Phase 4: Dedicated Wrist Companions & Polish
-- [ ] Add Apple Watch (SwiftUI) companion target in Xcode prebuild.
-- [ ] Add Wear OS (Compose) companion module in Android project.
-- [ ] App store icon, splash screen, and metadata preparation.
-- [ ] Publish to TestFlight (iOS) and Google Play Internal Testing.
+## 📌 Phase 4: Dedicated Wrist Companions & Store Prep
+- [ ] Add Apple Watch (SwiftUI) companion target.
+- [ ] Add Wear OS companion module.
+- [ ] Full app store assets (icons, splash screens).
+- [ ] Final end-to-end automated regression run.
