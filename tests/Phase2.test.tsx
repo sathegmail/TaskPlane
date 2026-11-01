@@ -1,10 +1,17 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import App, { appStore } from '../App';
 
 describe('Phase 2: Collaborative Workspaces, Folders & Task Modals', () => {
+  beforeEach(() => {
+    appStore.signOut();
+  });
+
   test('Admin invites collaborator via Google email modal', () => {
-    const { getByTestId, getByText } = render(<App />);
+    const { getByTestId } = render(<App />);
+
+    // Sign in with Google as admin (Aarav)
+    fireEvent.press(getByTestId('google-signin-primary'));
 
     // Open invite modal
     const inviteBtn = getByTestId('invite-collaborator-btn');
@@ -29,6 +36,9 @@ describe('Phase 2: Collaborative Workspaces, Folders & Task Modals', () => {
   test('Creates a new task folder via modal and allocates tasks to it', () => {
     const { getByTestId, getByText } = render(<App />);
 
+    // Sign in with Google
+    fireEvent.press(getByTestId('google-signin-primary'));
+
     // Open folder modal
     const newFolderBtn = getByTestId('new-folder-modal-btn');
     fireEvent.press(newFolderBtn);
@@ -49,7 +59,10 @@ describe('Phase 2: Collaborative Workspaces, Folders & Task Modals', () => {
   });
 
   test('Creates a detailed task with multi-assignees and weekly recurrence via TaskModal', () => {
-    const { getByTestId, getByText } = render(<App />);
+    const { getByTestId } = render(<App />);
+
+    // Sign in with Google
+    fireEvent.press(getByTestId('google-signin-primary'));
 
     // Open Task Modal
     const openBtn = getByTestId('open-task-modal-btn');
@@ -60,8 +73,8 @@ describe('Phase 2: Collaborative Workspaces, Folders & Task Modals', () => {
     fireEvent.changeText(titleInput, 'Weekly Architecture Review');
 
     // Select assignees
-    const assigneeJohn = getByTestId('assignee-John');
-    const assigneeSarah = getByTestId('assignee-Sarah');
+    const assigneeJohn = getByTestId('assignee-John Doe');
+    const assigneeSarah = getByTestId('assignee-Sarah Smith');
     fireEvent.press(assigneeJohn);
     fireEvent.press(assigneeSarah);
 
@@ -76,13 +89,16 @@ describe('Phase 2: Collaborative Workspaces, Folders & Task Modals', () => {
     // Verify task is created with multiple assignees and recurrence
     const created = appStore.getState().tasks.find((t) => t.title === 'Weekly Architecture Review');
     expect(created).toBeDefined();
-    expect(created?.assigned_to).toEqual(expect.arrayContaining(['John', 'Sarah']));
+    expect(created?.assigned_to).toEqual(expect.arrayContaining(['John Doe', 'Sarah Smith']));
     expect(created?.recurrence).toBeDefined();
     expect(created?.recurrence?.frequency).toBe('weekly');
   });
 
   test('Creates a new group workspace', () => {
     const { getByTestId } = render(<App />);
+
+    // Sign in with Google
+    fireEvent.press(getByTestId('google-signin-primary'));
 
     const newGroupBtn = getByTestId('new-group-btn');
     const prevCount = appStore.getState().groups.length;

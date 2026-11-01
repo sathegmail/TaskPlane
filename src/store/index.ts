@@ -64,6 +64,8 @@ export class TaskStore {
   // --- User Profile & Authentication ---
   public setCurrentUser(user: UserProfile) {
     this.state.currentUser = user;
+    // Auto-redeem any pending invitations for this user's Google email
+    this.redeemPendingInvitations(user);
     // Auto-create default personal workspace if user has no groups
     const userGroups = this.getUserGroups(user.id);
     if (userGroups.length === 0) {
@@ -72,6 +74,12 @@ export class TaskStore {
     } else if (!this.state.activeGroupId) {
       this.state.activeGroupId = userGroups[0].id;
     }
+    this.notify();
+  }
+
+  public signOut() {
+    this.state.currentUser = null;
+    this.state.activeGroupId = null;
     this.notify();
   }
 

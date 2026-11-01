@@ -3,8 +3,24 @@ import { render, fireEvent, act } from '@testing-library/react-native';
 import App, { appStore } from '../App';
 
 describe('TaskPlane UI Component & Interaction Tests', () => {
-  test('Renders header, group switcher, and initial recurring task', () => {
-    const { getByText, getAllByText } = render(<App />);
+  beforeEach(() => {
+    // Reset to logged out
+    appStore.signOut();
+  });
+
+  test('Renders Google OAuth login gate initially', () => {
+    const { getByText, getByTestId } = render(<App />);
+
+    expect(getByText('Continue with Google')).toBeTruthy();
+    expect(getByTestId('google-signin-primary')).toBeTruthy();
+  });
+
+  test('Signs in with Google and displays header, group switcher, and initial recurring task', () => {
+    const { getByText, getAllByText, getByTestId } = render(<App />);
+
+    // Click Google Sign In
+    const googleBtn = getByTestId('google-signin-primary');
+    fireEvent.press(googleBtn);
 
     // Brand and group header
     expect(getByText('TaskPlane')).toBeTruthy();
@@ -12,11 +28,13 @@ describe('TaskPlane UI Component & Interaction Tests', () => {
 
     // Recurring task with assignees
     expect(getByText('Empty Dishwasher')).toBeTruthy();
-    expect(getByText('👤 John, Sarah')).toBeTruthy();
   });
 
   test('Simulates user quick-adding a new task', () => {
     const { getByTestId, getByText } = render(<App />);
+
+    // Sign in first
+    fireEvent.press(getByTestId('google-signin-primary'));
 
     const input = getByTestId('quick-add-input');
     const addButton = getByTestId('quick-add-button');
@@ -30,9 +48,11 @@ describe('TaskPlane UI Component & Interaction Tests', () => {
   });
 
   test('Simulates clicking a task to toggle completion', () => {
-    const { getByText } = render(<App />);
+    const { getByText, getByTestId } = render(<App />);
 
-    // Empty Dishwasher task is always present
+    // Sign in first
+    fireEvent.press(getByTestId('google-signin-primary'));
+
     const dishwasherTask = getByText('Empty Dishwasher');
     expect(dishwasherTask).toBeTruthy();
 

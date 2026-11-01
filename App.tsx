@@ -12,55 +12,112 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { TaskStore } from './src/store';
-import { Task, TaskPriority, RecurrenceRule } from './src/types';
+import { Task, TaskPriority, RecurrenceRule, UserProfile } from './src/types';
+import { LoginScreen } from './src/components/LoginScreen';
 import { InviteModal } from './src/components/InviteModal';
 import { FolderModal } from './src/components/FolderModal';
 import { TaskModal } from './src/components/TaskModal';
 
 export const appStore = new TaskStore();
 
-// Bootstrap seed data
-const defaultUser = {
-  id: 'user-aarav-1',
-  email: 'aarav@gmail.com',
-  full_name: 'Aarav Sathe',
+// Pre-seed the collaborative Family workspace and tasks
+const creatorId = 'user-aarav';
+const familyGroup = appStore.createGroup('Family & Home', 'Shared household chores and errands', creatorId);
+
+// Pre-create folders inside Family & Home
+const choresFolder = {
+  id: 'folder-chores-1',
+  group_id: familyGroup.id,
+  name: 'Chores',
+  color: '#6366F1',
+  created_by: creatorId,
   created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
 };
-appStore.setCurrentUser(defaultUser);
+const groceryFolder = {
+  id: 'folder-groceries-2',
+  group_id: familyGroup.id,
+  name: 'Groceries',
+  color: '#10B981',
+  created_by: creatorId,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+appStore.getState().folders.push(choresFolder, groceryFolder);
 
-// Family & Home workspace
-const familyGroup = appStore.createGroup('Family & Home', 'Shared household chores and errands');
-appStore.setActiveGroup(familyGroup.id);
-
-const choresFolder = appStore.createFolder('Chores', '#6366F1');
-const groceryFolder = appStore.createFolder('Groceries', '#10B981');
-
-// Monday Dishwasher recurring task
+// Recurring Monday Dishwasher task
 const mondayDate = new Date();
 mondayDate.setDate(mondayDate.getDate() + ((1 + 7 - mondayDate.getDay()) % 7 || 7));
 mondayDate.setHours(8, 0, 0, 0);
 
-appStore.createTask({
-  title: 'Empty Dishwasher',
-  notes: 'Check top rack glasses and sanitize filter',
-  folder_id: choresFolder.id,
-  priority: 'high',
-  due_date: mondayDate.toISOString(),
-  assigned_to: ['John', 'Sarah'],
-  recurrence: {
-    frequency: 'weekly',
-    interval: 1,
-    days_of_week: ['mon'],
-    time_of_day: '08:00',
+appStore.getState().tasks.push(
+  {
+    id: 'task-dishwasher-1',
+    group_id: familyGroup.id,
+    folder_id: choresFolder.id,
+    title: 'Empty Dishwasher',
+    notes: 'Check top rack glasses and sanitize filter',
+    priority: 'high',
+    due_date: mondayDate.toISOString(),
+    is_completed: false,
+    created_by: creatorId,
+    assigned_to: ['John Doe', 'Sarah Smith'],
+    recurrence: {
+      frequency: 'weekly',
+      interval: 1,
+      days_of_week: ['mon'],
+      time_of_day: '08:00',
+    },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
-});
+  {
+    id: 'task-groceries-2',
+    group_id: familyGroup.id,
+    folder_id: groceryFolder.id,
+    title: 'Organic almond milk & oats',
+    priority: 'medium',
+    is_completed: false,
+    created_by: creatorId,
+    assigned_to: ['Aarav Sathe'],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+);
 
-appStore.createTask({
-  title: 'Organic almond milk & oats',
-  folder_id: groceryFolder.id,
-  priority: 'medium',
-  assigned_to: ['Aarav'],
-});
+// Pre-seed pending invitations for John and Sarah so their Google sign-in seamlessly connects them!
+appStore.getState().invitations.push(
+  {
+    id: 'invite-john-1',
+    group_id: familyGroup.id,
+    invited_email: 'john@gmail.com',
+    invited_by: creatorId,
+    role: 'member',
+    permissions: {
+      can_create_tasks: true,
+      can_edit_tasks: true,
+      can_manage_folders: false,
+      can_participate: true,
+    },
+    status: 'pending',
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'invite-sarah-2',
+    group_id: familyGroup.id,
+    invited_email: 'sarah@gmail.com',
+    invited_by: creatorId,
+    role: 'member',
+    permissions: {
+      can_create_tasks: true,
+      can_edit_tasks: true,
+      can_manage_folders: true,
+      can_participate: true,
+    },
+    status: 'pending',
+    created_at: new Date().toISOString(),
+  }
+);
 
 export default function App() {
   const { width } = useWindowDimensions();
@@ -82,7 +139,15 @@ export default function App() {
   }, []);
 
   const state = appStore.getState();
+  const currentUser = state.currentUser;
+
+  // Gate app behind Google OAuth Sign In screen
+  if (!currentUser) {
+    return <LoginScreen onSignIn={(user: UserProfile) => appStore.setCurrentUser(user)} />;
+  }
+
   const activeGroup = state.groups.find((g) => g.id === state.activeGroupId);
+  const userGroups = appStore.getUserGroups(currentUser.id);
   const folders = appStore.getActiveGroupFolders();
   const tasks = appStore.getActiveGroupTasks(selectedFolderId);
   const selectedTask = tasks.find((t) => t.id === selectedTaskId) || tasks[0] || null;
@@ -129,10 +194,17 @@ export default function App() {
   };
 
   const availableMembers = [
-    { id: '1', name: 'Aarav' },
-    { id: '2', name: 'John' },
-    { id: '3', name: 'Sarah' },
+    { id: '1', name: currentUser.full_name },
+    { id: '2', name: 'John Doe' },
+    { id: '3', name: 'Sarah Smith' },
   ];
+
+  const userInitials = currentUser.full_name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -143,15 +215,20 @@ export default function App() {
         {/* COLUMN 1: SIDEBAR (Groups, Folders, Admin Invite)         */}
         {/* ========================================================= */}
         <View style={[styles.sidebar, isTablet ? styles.sidebarTablet : styles.sidebarMobile]}>
-          {/* Brand Header */}
+          {/* Brand & User Profile Row */}
           <View style={styles.brandRow}>
             <View>
               <Text style={styles.brandTitle}>TaskPlane</Text>
-              <Text style={styles.platformSubtext}>Cloud & Wrist Sync</Text>
+              <Text style={styles.userEmailText}>{currentUser.email}</Text>
             </View>
-            <View style={styles.userBadge}>
-              <Text style={styles.userBadgeText}>AS</Text>
-            </View>
+            <TouchableOpacity
+              testID="sign-out-btn"
+              style={styles.userBadge}
+              onPress={() => appStore.signOut()}
+              accessibilityLabel="Click to switch account"
+            >
+              <Text style={styles.userBadgeText}>{userInitials}</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Groups Section */}
@@ -170,7 +247,7 @@ export default function App() {
             </View>
 
             <ScrollView horizontal={!isTablet} showsHorizontalScrollIndicator={false} style={styles.groupScroll}>
-              {state.groups.map((group) => {
+              {userGroups.map((group) => {
                 const isActive = group.id === state.activeGroupId;
                 return (
                   <TouchableOpacity
@@ -519,7 +596,7 @@ const styles = StyleSheet.create({
     color: '#F8FAFC',
     letterSpacing: -0.5,
   },
-  platformSubtext: {
+  userEmailText: {
     fontSize: 11,
     color: '#818CF8',
     fontWeight: '600',
