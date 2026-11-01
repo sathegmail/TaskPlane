@@ -16,25 +16,25 @@
 ---
 
 ## 📌 Phase 2: Groups, Folders, Recurring Tasks & Collaborative UI
-- [ ] **Google Sign-In UI & Profile State**:
+- [x] **Google Sign-In UI & Profile State**:
   - Google OAuth login flow (mock/dev provider + Supabase Google Auth).
   - Profile avatar, display name, and active session management.
-- [ ] **Group Switcher & Admin Controls**:
+- [x] **Group Switcher & Admin Controls**:
   - Group dropdown/selector (switch between Work, Personal, etc.).
   - Admin member management screen (invite via Google email, configure permissions).
-- [ ] **Folder Management (Allocation)**:
+- [x] **Folder Management (Allocation)**:
   - Create / rename folders inside the active group.
   - Filter tasks by folder.
-- [ ] **Task Creation & Multi-Assignee Allocation**:
+- [x] **Task Creation & Multi-Assignee Allocation**:
   - Quick Add Task with folder picker and multi-member selector (e.g. John + Sarah).
   - Recurrence Builder: e.g. "Every Monday", daily, custom intervals.
   - Interactive Task List (checkbox, priority indicators, swipe to delete).
-- [ ] **Recurrence Engine**:
+- [x] **Recurrence Engine**:
   - Auto-generate next occurrence upon completion while logging `completed_by`.
-- [ ] **Adaptive Layout**:
+- [x] **Adaptive Layout**:
   - 3-column tablet / iPad layout (Groups & Folders sidebar + Task List + Task Details).
   - Clean single-screen mobile navigation.
-- [ ] **Agent Test Suite**: 100% automated tests for group switching, recurrence calculation (next Monday test), multi-assignee completion, and folder allocation.
+- [x] **Agent Test Suite**: 100% automated tests for group switching, recurrence calculation (next Monday test), multi-assignee completion, and folder allocation.
 
 ---
 
