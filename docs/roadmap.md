@@ -6,39 +6,41 @@
 ---
 
 ## 📌 Phase 1: Project Scaffolding & Automated Test Harness
-- [ ] Initialize Expo (React Native + TypeScript) project.
+- [ ] Initialize Expo (React Native + TypeScript) project with modern navigation.
 - [ ] Install & configure **Jest** + **React Native Testing Library**.
-- [ ] Configure `test:all` script (`tsc --noEmit` + `jest`).
-- [ ] Set up styling (NativeWind / Tailwind) with responsive layouts.
-- [ ] Verify scaffolding passes 100% of automated tests & headless bundle compilation.
+- [ ] Define TypeScript schemas for `Group`, `GroupMember`, `Folder`, and `Task`.
+- [ ] Build & test local store engine (SQLite / in-memory cache) with group/folder relationships.
+- [ ] Verify scaffolding passes 100% automated tests & headless bundle compilation.
 - [ ] Commit & push to GitHub.
 
 ---
 
-## 📌 Phase 2: Core Task Engine & Verified UI (Phone + Tablet)
-- [ ] Build Task Data Store (offline persistence with SQLite / MMKV).
-- [ ] **Agent Test**: Automated unit tests for create, update, delete, priority sort, and date filters.
-- [ ] Build UI Components:
-  - Header & Stats (total, completed, pending).
-  - Quick Add Task Input bar.
-  - Interactive Task List with completion toggle and delete swipe.
-  - Filter tabs (All, Today, Priority, Done).
-- [ ] **Agent Test**: Component simulation tests for typing, adding, checking off, and filtering.
-- [ ] Build Responsive Layout for iPad / Tablet / Desktop.
-- [ ] Verify test suite passes 100% before handing over for user visual check.
+## 📌 Phase 2: Groups, Folders & Collaborative Task UI
+- [ ] **Group Switcher & Admin Controls**:
+  - Group dropdown/selector (switch between Work, Personal, etc.).
+  - Admin member management screen (invite member, grant `can_create_tasks`, `can_edit_tasks`, etc.).
+- [ ] **Folder Management (Allocation)**:
+  - Create / rename folders inside the active group.
+  - Filter tasks by folder.
+- [ ] **Task Creation & Allocation**:
+  - Quick Add Task with folder picker and member assignment.
+  - Interactive Task List (checkbox, priority indicators, swipe to delete).
+- [ ] **Adaptive Layout**:
+  - 3-column tablet / iPad layout (Groups & Folders sidebar + Task List + Task Details).
+  - Clean single-screen mobile navigation.
+- [ ] **Agent Test Suite**: 100% automated tests for group switching, permission gating, folder allocation, and task completion.
 
 ---
 
-## 📌 Phase 3: Universal Smartwatch Notifications & Cloud Sync
-- [ ] Configure `expo-notifications` with wrist actions (`ACTION_COMPLETE`, `ACTION_SNOOZE`).
-- [ ] **Agent Test**: Simulated notification trigger & background completion tests.
-- [ ] Set up Supabase client for multi-device sync with offline fallback.
-- [ ] **Agent Test**: Offline-to-online sync reconciliation tests.
+## 📌 Phase 3: Smartwatch Sync & Multi-User Realtime
+- [ ] Configure `expo-notifications` for assigned task alerts with `Done` and `Snooze` actions.
+- [ ] Connect Supabase Realtime so changes made by one group member update live on other members' devices.
+- [ ] **Agent Test**: Multi-user permissions and notification trigger simulations.
 
 ---
 
-## 📌 Phase 4: Dedicated Wrist Companions & Store Prep
+## 📌 Phase 4: Dedicated Wrist Targets & Store Publishing
 - [ ] Add Apple Watch (SwiftUI) companion target.
 - [ ] Add Wear OS companion module.
-- [ ] Full app store assets (icons, splash screens).
-- [ ] Final end-to-end automated regression run.
+- [ ] Assets, icons, and Play Store / App Store metadata.
+- [ ] Final end-to-end regression test suite.

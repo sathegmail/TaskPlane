@@ -1,6 +1,6 @@
 # TaskPlane — Product Specification
 
-**Version:** 1.0 (Draft)  
+**Version:** 2.0 (Group Collaboration & RBAC)  
 **Status:** In Progress  
 **Last Updated:** 2026-11-01  
 
@@ -8,9 +8,9 @@
 
 ## 1. Executive Summary
 
-**TaskPlane** is a fast, modern, cross-platform productivity and task management app designed to run seamlessly across mobile phones, tablets, and smartwatches. 
+**TaskPlane** is a fast, modern, cross-platform collaborative productivity system designed for phones, tablets, and smartwatches. 
 
-The core mission is **effortless capture and instant wrist access**: users can capture ideas or tasks in seconds on their phone/tablet, and view, snooze, or check off tasks directly from their wrist without opening their phone.
+Every task in TaskPlane belongs to a **Group** (Workspace/Team). Groups are organized into **Folders**, and group administrators manage member permissions to create, modify, allocate, or participate in tasks.
 
 ---
 
@@ -18,57 +18,57 @@ The core mission is **effortless capture and instant wrist access**: users can c
 
 | Platform | Target Devices | Primary Experience | Distribution Channel |
 | :--- | :--- | :--- | :--- |
-| **iOS** | iPhone | Full App UI | Apple App Store |
-| **iPadOS** | iPad | Adaptive / Multi-column UI | Apple App Store |
+| **iOS** | iPhone | Full App UI (Group switching, folder nav, quick add) | Apple App Store |
+| **iPadOS** | iPad | Adaptive 3-Column UI (Groups & Folders sidebar + Tasks + Details) | Apple App Store |
 | **Android** | All Android Phones & Tablets | Full App UI | Google Play Store |
-| **watchOS** | Apple Watch (Series 4+) | Companion Wrist Checklist + Complications | Apple App Store (bundled with iOS) |
-| **Wear OS** | Galaxy Watch, Pixel Watch, OnePlus | Companion Wrist Checklist + Quick Tiles | Google Play Store |
+| **watchOS** | Apple Watch (Series 4+) | Assigned tasks checklist, group filter, complications | Apple App Store |
+| **Wear OS** | Galaxy Watch, Pixel Watch, OnePlus | Assigned tasks checklist, quick tiles | Google Play Store |
 | **All Other Smartwatches** | Garmin, Fitbit, Amazfit, etc. | Actionable Wrist Notifications (Done / Snooze) | Handled automatically via Bluetooth |
 
 ---
 
-## 3. Core Features (MVP Scope)
+## 3. Structural Hierarchy
 
-### 3.1 Task Capture & Organization
-- **Quick Add**: Input tasks with minimal friction (title, optional notes).
-- **Due Dates & Times**: Schedule tasks with reminder alerts.
-- **Priority Levels**: Low, Medium, High, Urgent.
-- **Lists / Categories**: Organize tasks into work, personal, projects, etc.
-- **Completion Tracking**: Check off tasks, view completed archive.
-
-### 3.2 Smartwatch & Wearable Experience
-- **Actionable Notifications**:
-  - Reminders pop up on all watches.
-  - Interactive action buttons: `[✓ Mark Done]` and `[⏰ Snooze 15m]` directly from the wrist without reaching for the phone.
-- **Dedicated Wrist App (Apple Watch & Wear OS)**:
-  - "Today" view showing upcoming tasks.
-  - Tap to complete with haptic feedback.
-  - Glanceable complications / tiles on watch faces.
-
-### 3.3 Synchronization & Offline-First
-- **Local-First Architecture**: App works with 100% functionality offline.
-- **Real-Time Cloud Sync**: Tasks instantly sync across phone, tablet, and watch as soon as internet connection is available.
-- **Multi-Device Conflict Resolution**: Last-write-wins with timestamps to avoid data loss.
+```
+User
+└── Groups (Every user belongs to 1 or more groups)
+    ├── Administrator (Creator by default; manages permissions)
+    ├── Members (Configured with granular access rights)
+    ├── Folders (Sub-containers for allocating related tasks)
+    └── Tasks (Belong to a Group + optional Folder; assigned to Participants)
+```
 
 ---
 
-## 4. Key User Flows
+## 4. Feature Specifications
 
-### Flow 1: Quick Capture on Mobile
-1. User opens TaskPlane $\rightarrow$ floating action button (+) or persistent quick-input field.
-2. User types task title, selects optional due time or priority.
-3. Task immediately appears in "Today" or inbox list.
-4. Changes sync to cloud backend and wearable companion.
+### 4.1 Groups & Multi-Tenancy
+- **Default Group**: Upon registration, each user gets a private group (e.g. *"Personal"* or *"My Space"*).
+- **Group Creation**: Any user can create new groups (e.g., *"TaskPlane Team"*, *"Family"*).
+- **Group Switching**: A switcher at the top of the UI lets users instantly filter their view to a specific group or view *"All Assigned to Me"*.
 
-### Flow 2: Wrist Interaction (During the Day)
-1. Task reminder triggers at scheduled time.
-2. Watch vibrates with notification.
-3. User taps `Done` directly on the watch $\rightarrow$ task marks completed on watch, phone, and cloud.
+### 4.2 Group Administration & Permissions (RBAC)
+- **Administrator Role**:
+  - The creator of a group is its primary Administrator.
+  - Admins can invite new members via email or invite code.
+  - Admins can grant or revoke Admin status to other members.
+- **Granular Member Permissions**:
+  Admins can customize each member's capabilities:
+  - `can_create_tasks`: Ability to create new tasks in the group.
+  - `can_edit_tasks`: Ability to edit/delete any task in the group.
+  - `can_manage_folders`: Ability to create, rename, or delete folders.
+  - `can_participate`: Ability to be assigned to tasks and check off assigned tasks.
 
----
+### 4.3 Folders (Task Allocation)
+- Each group can create multiple **Folders** to organize work into projects, sprints, or departments (e.g., *"Bug Tracker"*, *"Sprint 1"*, *"Groceries"*).
+- Tasks are allocated directly into these folders.
+- Folders feature customizable color badges and icons for glanceability.
 
-## 5. Non-Functional Requirements
-- **Performance**: App cold launch under 1.5 seconds.
-- **Battery Efficiency**: Zero background battery drain; uses native system notification schedulers.
-- **Design Language**: Clean, modern, accessible typography, high contrast, full Dark Mode & Light Mode support.
-- **Security**: Secure authentication, encrypted cloud sync over TLS, local data protected by device sandbox.
+### 4.4 Task Lifecycle & Participation
+- **Task Fields**: Title, description/notes, folder reference, due date/time, priority, status.
+- **Assignees / Participants**: Tasks can be assigned to one or more members of the group.
+- **Wrist Sync**: If a task is assigned to a user, it syncs to their smartwatches and triggers their wrist notifications.
+
+### 4.5 Synchronization & Offline
+- **Local-First**: All group data is cached locally in SQLite for instant offline access.
+- **Real-Time Group Sync**: When any member creates, moves, or completes a task, the change propagates in real-time to all group members' devices via Supabase.
